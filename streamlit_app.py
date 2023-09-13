@@ -1,56 +1,49 @@
-import joblib
-from statsmodels.tsa.statespace.sarimax import SARIMAX
-# from sklearn.metrics import mean_absolute_percentage_error
+import streamlit as st
 import pandas as pd
 
+# from model import mape_metrics
+from annotated_text import annotated_text
+from timemodel import get_prediction
+# from weekdatamodel import get_weekly
+
+# df = pd.read_csv('train.csv')
 
 
-data = pd.read_csv('newtrain.csv')
-data['date'] = pd.DatetimeIndex(data['date'])
-data.set_index('date',inplace=True)
 
-# Load the model from the file
-yearly_model = joblib.load('yearly.pkl')
-result = yearly_model.fit()
+# new_data = df.iloc[:,[1,4]]
+
+# new_data['date'] = pd.DatetimeIndex(new_data['date'])
 
 
-train_size = len(data[data.index.year < 2016])
-train, test = data[:train_size], data[train_size:]
-
-start = len(train)
-end = len(train) + len(test) - 1
-
-# Predictions for one-year against the test set
-pred1 = result.predict(start, end,
-                             typ = 'levels').rename("Pred")
+# new_data.set_index('date',inplace=True)
 
 
-def get_prediction(data):
-    
-  
-# Forecast for the next 3 years
-    year_forecast = result.predict(start = 36, 
-                            end = 36 + data * 12, 
-                            type = 'levels').rename('Forecast')
-    
-    halfyear_forecast = result.predict(start = 36, 
-                            end = 36 + data * 6, 
-                            type = 'levels').rename('Forecast')
-
-    result_list =  list()
-    result_list.append(year_forecast)
-    result_list.append(halfyear_forecast)
-    return result_list
-    
+# monthly_data = new_data.resample('M').sum()
 
 
-    # Plot the forecast values
-    # new_monthly_data.plot(figsize = (12, 5), legend = True);
-    # forecast.plot(legend = True)
+num = st.sidebar.slider('Select the time period',0,3 )
 
-# def mape_metrics():
-#     return 100 - mean_absolute_percentage_error(test,pred1)
+st.title('Demand Forecasting')
+
+
+# genre = st.radio(
+#     "Select the option",
+#     ["Yearly", "Half-Yearly", "Weekly"])
 
 
 
 
+
+
+# st.line_chart(get_prediction(num))
+
+# st.set_page_config(layout="wide")
+
+with st.empty():
+    col1, col2 = st.columns(2)
+    with col1:
+        st.text('Yearly forecasting')
+        st.line_chart(get_prediction(num)[0], height=250,color='#525FE1',use_container_width=True)
+    with col2:
+        st.text('Half Yearly forecasting')
+        st.line_chart(get_prediction(num)[1], height=250,color='#FF2171',use_container_width=True)
